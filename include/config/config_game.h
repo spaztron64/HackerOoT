@@ -5,6 +5,9 @@
 /*****************
  * GAME SETTINGS *
  *****************/
+ 
+// Uncomment the below define to use a CPU-driven timer instead of a VI event to handle retrace events. Allows a PAL build to run at the full 20 ticks per second. Don't use this for NTSC builds, it serves no purpose.
+// #define ENABLE_PAL_16MS
 
 // Fix annoying glitches (crashes and softlocks)
 #define FIX_ANNOYING_GLITCH true
