@@ -8,6 +8,10 @@
 #if ENABLE_HACKER_DEBUG
 #include "debug.h"
 
+#define VIDEOMODE_NTSC 0
+#define VIDEOMODE_PAL50 1
+#define VIDEOMODE_PAL60 2
+
 extern Debug gDebug;
 #endif
 
@@ -45,6 +49,7 @@ extern OSViContext* __osViCurr;
 extern OSViContext* __osViNext;
 extern OSViMode osViModeFpalLan1;
 extern OSViMode gCustomViModePal60Lan1;
+extern u8 gVideoMode; // To be used by code that changes video modes at runtime. Use the VIDEOMODE_ defines above.
 extern u32 __additional_scanline;
 extern const char gBuildMakeOption[];
 extern const char gBuildGitVersion[];

@@ -38,9 +38,7 @@
 vu32 gIrqMgrResetStatus = IRQ_RESET_STATUS_IDLE;
 volatile OSTime sIrqMgrResetTime = 0;
 volatile OSTime gIrqMgrRetraceTime = 0;
-#ifdef ENABLE_PAL_16MS
 OSTimer logictimer;
-#endif
 u32 sIrqMgrRetraceCount = 0;
 
 
@@ -312,14 +310,13 @@ void IrqMgr_Init(IrqMgr* irqMgr, void* stack, OSPri pri, u8 retraceCount) {
 
     osCreateMesgQueue(&irqMgr->queue, irqMgr->msgBuf, ARRAY_COUNT(irqMgr->msgBuf));
     osSetEventMesg(OS_EVENT_PRENMI, &irqMgr->queue, (OSMesg)IRQ_PRENMI_MSG);
-#ifndef ENABLE_PAL_16MS
-	osViSetEvent(&irqMgr->queue, (OSMesg)IRQ_RETRACE_MSG, retraceCount);
-#else
-	// Blast the retrace message queue every 16.6ms regardless of region.
-	// This allows the game to run at full speed even at 50Hz, but this also makes the audio thread run too fast,
-	// which is why it needs to have it's timings readjusted. See the changes in audio_thread_manager.c
-	osSetTimer(&logictimer, 0, OS_USEC_TO_CYCLES(16666), &irqMgr->queue, (OSMesg)IRQ_RETRACE_MSG);
-#endif
+	if(gVideoMode != VIDEOMODE_PAL50)
+		osViSetEvent(&irqMgr->queue, (OSMesg)IRQ_RETRACE_MSG, retraceCount);
+	else
+		osSetTimer(&logictimer, 0, OS_USEC_TO_CYCLES(16666), &irqMgr->queue, (OSMesg)IRQ_RETRACE_MSG);
+		// Blast the retrace message queue every 16.6ms for PAL50.
+		// This allows the game to run at full speed even at 50Hz, but this also makes the audio thread run too fast,
+		// which is why it needs to have it's timings readjusted. See the changes in audio_thread_manager.c
     osCreateThread(&irqMgr->thread, THREAD_ID_IRQMGR, IrqMgr_ThreadEntry, irqMgr, stack, pri);
     osStartThread(&irqMgr->thread);
 }

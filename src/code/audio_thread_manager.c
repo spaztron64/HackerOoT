@@ -6,12 +6,10 @@
  */
 
 #include "global.h"
-#ifdef ENABLE_PAL_16MS
 // Defining all the necessary OS data for our new audio timer
 OSTimer audiotimer;
 OSMesgQueue AudioRetimingQueue;
 OSMesg AudioMesgBuf[1];
-#endif
 
 void AudioMgr_NotifyTaskDone(AudioMgr* audioMgr) {
     AudioTask* task = audioMgr->rspTask;
@@ -100,9 +98,7 @@ void AudioMgr_ThreadEntry(void* arg) {
     AudioMgr* audioMgr = (AudioMgr*)arg;
     IrqMgrClient irqClient;
     s16* msg = NULL;
-#ifdef ENABLE_PAL_16MS	
 	s16* msgaud = NULL;
-#endif
 
     // "Start running audio manager thread"
     PRINTF("オーディオマネージャスレッド実行開始\n");
@@ -122,13 +118,13 @@ void AudioMgr_ThreadEntry(void* arg) {
         osRecvMesg(&audioMgr->interruptQueue, (OSMesg*)&msg, OS_MESG_BLOCK);
         switch (*msg) {
             case OS_SC_RETRACE_MSG:
-#ifdef ENABLE_PAL_16MS			
 			/*
 			Since our audio thread now runs more frequently than the game expects it to in 50Hz modes, it will handle retraces sooner than it should, leading to sped up and skippy audio playback.
 			Because of this, we need to block the thread for an additional 3.4ms to meet the expected 20ms threshold. The blocking message receiver below does exactly that.
 			*/
-			osRecvMesg(&AudioRetimingQueue, (OSMesg*)&msgaud, OS_MESG_BLOCK);
-#endif
+			if(gVideoMode == VIDEOMODE_PAL50){
+				osRecvMesg(&AudioRetimingQueue, (OSMesg*)&msgaud, OS_MESG_BLOCK);
+			}
                 AudioMgr_HandleRetrace(audioMgr);
                 // Empty the interrupt queue
                 while (!MQ_IS_EMPTY(&audioMgr->interruptQueue)) {
@@ -173,18 +169,13 @@ void AudioMgr_Init(AudioMgr* audioMgr, void* stack, OSPri pri, OSId id, Schedule
 
     osCreateMesgQueue(&audioMgr->taskDoneQueue, &audioMgr->taskDoneMsg, 1);
     osCreateMesgQueue(&audioMgr->interruptQueue, audioMgr->interruptMsgBuf, ARRAY_COUNT(audioMgr->interruptMsgBuf));
-#ifdef ENABLE_PAL_16MS
-	// Create the audio retiming message queue
-	osCreateMesgQueue(&AudioRetimingQueue, AudioMesgBuf, ARRAY_COUNT(AudioMesgBuf));
-#endif
+	osCreateMesgQueue(&AudioRetimingQueue, AudioMesgBuf, ARRAY_COUNT(AudioMesgBuf)); // Create the audio retiming message queue
     osCreateMesgQueue(&audioMgr->initQueue, &audioMgr->initMsg, 1);
 
     // Send a message to the task done queue so it is initially full
     osSendMesg(&audioMgr->taskDoneQueue, NULL, OS_MESG_BLOCK);
-#ifdef ENABLE_PAL_16MS
-	// Fill the new queue with a message every 20ms.
-	osSetTimer(&audiotimer, 0, OS_USEC_TO_CYCLES(20000), &AudioRetimingQueue, (OSMesg)1);
-#endif
+	if(gVideoMode == VIDEOMODE_PAL50)
+		osSetTimer(&audiotimer, 0, OS_USEC_TO_CYCLES(20000), &AudioRetimingQueue, (OSMesg)1); // Fill the new queue with a message every 20ms.
     osCreateThread(&audioMgr->thread, id, AudioMgr_ThreadEntry, audioMgr, stack, pri);
     osStartThread(&audioMgr->thread);
 }

@@ -6,6 +6,7 @@ extern u8 _buffersSegmentEnd[];
 s32 gScreenWidth = SCREEN_WIDTH;
 s32 gScreenHeight = SCREEN_HEIGHT;
 u32 gSystemHeapSize = 0;
+u8 gVideoMode = 0;
 
 PreNmiBuff* gAppNmiBufferPtr;
 Scheduler gScheduler;
@@ -55,6 +56,7 @@ void Main(void* arg) {
     PRINTF("mainproc 実行開始\n"); // "Start running"
     gScreenWidth = SCREEN_WIDTH;
     gScreenHeight = SCREEN_HEIGHT;
+	gVideoMode = VIDEOMODE_PAL60; //TODO: Don't hardcode this, prompt the user at bootup.	
     gAppNmiBufferPtr = (PreNmiBuff*)osAppNMIBuffer;
     PreNmiBuff_Init(gAppNmiBufferPtr);
     Fault_Init();

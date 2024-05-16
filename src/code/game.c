@@ -306,13 +306,26 @@ void GameState_Update(GameState* gameState) {
         }
 
         if (SREG(63) == 4 || (SREG(63) == 2u && osTvType == OS_TV_PAL)) {
-            gfxCtx->viMode = &gCustomViModePal60Lan1;
-            gfxCtx->yScale = 1.0f;
+			if (gVideoMode == VIDEOMODE_PAL60){
+				gfxCtx->viMode = &gCustomViModePal60Lan1;
+				gfxCtx->yScale = 1.0f;
+			}
+			else{
+				gfxCtx->viMode = &osViModeFpalLan1;
+				gfxCtx->yScale = 0.833f;
+			}
+            
         }
 
         if (SREG(63) == 3 || (SREG(63) == 2u && osTvType == OS_TV_PAL)) {
-            gfxCtx->viMode = &gCustomViModePal60Lan1;
-            gfxCtx->yScale = 1.0f;
+            if (gVideoMode == VIDEOMODE_PAL60){
+				gfxCtx->viMode = &gCustomViModePal60Lan1;
+				gfxCtx->yScale = 1.0f;
+			}
+			else{
+				gfxCtx->viMode = &osViModeFpalLan1;
+				gfxCtx->yScale = 0.833f;
+			}
         }
     } else {
         gfxCtx->viMode = NULL;

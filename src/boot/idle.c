@@ -62,7 +62,7 @@ void Idle_ThreadEntry(void* arg) {
     PRINTF("オーディオヒープのサイズは %d キロバイトです\n",
            ((intptr_t)&gAudioHeap[ARRAY_COUNT(gAudioHeap)] - (intptr_t)gAudioHeap) / 1024);
     PRINTF(VT_RST);
-
+	
     osCreateViManager(OS_PRIORITY_VIMGR);
 
     gViConfigFeatures = OS_VI_GAMMA_OFF | OS_VI_DITHER_FILTER_ON;
@@ -77,7 +77,13 @@ void Idle_ThreadEntry(void* arg) {
 
         case OS_TV_PAL:
             gViConfigModeType = OS_VI_FPAL_LAN1;
-            gViConfigMode = gCustomViModePal60Lan1;
+			if (gVideoMode == VIDEOMODE_PAL60){
+				gViConfigMode = gCustomViModePal60Lan1;
+			}
+			else{
+				gViConfigMode = osViModeFpalLan1;
+				gViConfigYScale = 0.833f;
+			}
             break;
 
         case OS_TV_MPAL:

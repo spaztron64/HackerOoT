@@ -1151,8 +1151,14 @@ void AudioLoad_Init(void* heap, u32 heapSize) {
     // 1000 is a conversion from seconds to milliseconds
     switch (osTvType) {
         case OS_TV_PAL:
-            gAudioCtx.maxTempoTvTypeFactors = 1000 * REFRESH_RATE_DEVIATION_PAL / REFRESH_RATE_PAL;
-            gAudioCtx.refreshRate = REFRESH_RATE_PAL;
+			if(gVideoMode == VIDEOMODE_PAL50){
+				gAudioCtx.maxTempoTvTypeFactors = 1000 * REFRESH_RATE_DEVIATION_PAL / REFRESH_RATE_PAL;
+				gAudioCtx.refreshRate = REFRESH_RATE_PAL;
+			}
+			else{
+				gAudioCtx.maxTempoTvTypeFactors = 1000 * REFRESH_RATE_DEVIATION_PAL / REFRESH_RATE_PAL60;
+				gAudioCtx.refreshRate = REFRESH_RATE_PAL60;
+			}
             break;
 
         case OS_TV_MPAL:
